@@ -8,19 +8,36 @@ const App = () => {
   const [good, setGood] = useState(0)
   const [neutral, setNeutral] = useState(0)
   const [bad, setBad] = useState(0)
-
+  const [total, setTotal] = useState(0)
+  const [average, setAverage] = useState(0)
+  const [porcent, setPorcent] = useState(0)
+  
+  
   const buttonGood = () =>{
     const updateGoog = good +1
     setGood(updateGoog)
+    const updateTotal = updateGoog + neutral + bad
+    setTotal(updateTotal)
+    setAverage ((updateGoog - bad) / updateTotal)
+    setPorcent (updateGoog * 100 / updateTotal)  
   }
   const buttonNeutral = () =>{
-    const updateNeutral = neutral +1
+    const updateNeutral = neutral + 1
     setNeutral(updateNeutral)
+    const updateTotal = good + updateNeutral + bad
+    setTotal(updateTotal)
+    setAverage ((good - bad) / updateTotal) 
+    setPorcent (good * 100 / updateTotal)
   }
   const buttonBad = () =>{
     const updateBad = bad +1
     setBad(updateBad)
+    const updateTotal = good + neutral + updateBad
+    setTotal(updateTotal)
+    setAverage ((good - updateBad) / updateTotal) 
+    setPorcent (good * 100 / updateTotal)
   }
+  
 
   return (
     <div>
@@ -33,6 +50,9 @@ const App = () => {
       <p>Good = {good}</p>
       <p>Neutral = {neutral}</p>
       <p>Bad = {bad}</p>
+      <p>all = {total}</p>
+      <p>average = {average}</p>
+      <p>positiv = {porcent}%</p>
     </div>
   )
 }
