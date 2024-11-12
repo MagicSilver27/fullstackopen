@@ -1,7 +1,50 @@
 
 import { useState } from 'react'
 
+const StatisticLine = ({ text, value }) => {
+  return (
+    <div>
 
+      <table>
+        <tbody>
+          <tr>
+            <th>{text}</th>
+            <td>{value}</td>
+          </tr>
+        </tbody>
+      </table>
+
+    </div>
+  )
+}
+
+const Statistics = (props) => {
+  if (props.total === 0) {
+    return (
+      <div>
+        No feeback gieven
+      </div>
+    )
+  }
+  return (
+    <div>
+      <StatisticLine text={"Good"} value={props.good} />
+      <StatisticLine text={"Neutral"} value={props.neutral} />
+      <StatisticLine text={"Bad"} value={props.bad} />
+      <StatisticLine text={"all"} value={props.total} />
+      <StatisticLine text={"Average"} value={props.average} />
+      <StatisticLine text={"Positiv"} value={props.porcent + "%"} />
+    </div>
+  )
+}
+
+const Button = ({ click, text }) => {
+  return (
+
+    <button onClick={click}>{text}</button>
+
+  )
+}
 
 const App = () => {
   // guarda los clics de cada botón en su propio estado
@@ -11,48 +54,48 @@ const App = () => {
   const [total, setTotal] = useState(0)
   const [average, setAverage] = useState(0)
   const [porcent, setPorcent] = useState(0)
-  
-  
-  const buttonGood = () =>{
-    const updateGoog = good +1
+
+
+  const buttonGood = () => {
+    const updateGoog = good + 1
     setGood(updateGoog)
     const updateTotal = updateGoog + neutral + bad
     setTotal(updateTotal)
-    setAverage ((updateGoog - bad) / updateTotal)
-    setPorcent (updateGoog * 100 / updateTotal)  
+    setAverage((updateGoog - bad) / updateTotal)
+    setPorcent(updateGoog * 100 / updateTotal)
   }
-  const buttonNeutral = () =>{
+  const buttonNeutral = () => {
     const updateNeutral = neutral + 1
     setNeutral(updateNeutral)
     const updateTotal = good + updateNeutral + bad
     setTotal(updateTotal)
-    setAverage ((good - bad) / updateTotal) 
-    setPorcent (good * 100 / updateTotal)
+    setAverage((good - bad) / updateTotal)
+    setPorcent(good * 100 / updateTotal)
   }
-  const buttonBad = () =>{
-    const updateBad = bad +1
+  const buttonBad = () => {
+    const updateBad = bad + 1
     setBad(updateBad)
     const updateTotal = good + neutral + updateBad
     setTotal(updateTotal)
-    setAverage ((good - updateBad) / updateTotal) 
-    setPorcent (good * 100 / updateTotal)
+    setAverage((good - updateBad) / updateTotal)
+    setPorcent(good * 100 / updateTotal)
   }
-  
+
 
   return (
     <div>
       <h1>give feedback</h1>
-      <button onClick={buttonGood}>Good</button>
-      <button onClick={buttonNeutral}>Neutral</button>
-      <button onClick={buttonBad}>bad</button>
+      <Button click={buttonGood} text={'good'} />
+      <Button click={buttonNeutral} text={'neutral'} />
+      <Button click={buttonBad} text={'bad'} />
       <br />
       <h1>statistics</h1>
-      <p>Good = {good}</p>
-      <p>Neutral = {neutral}</p>
-      <p>Bad = {bad}</p>
-      <p>all = {total}</p>
-      <p>average = {average}</p>
-      <p>positiv = {porcent}%</p>
+      <Statistics good={good}
+        neutral={neutral}
+        bad={bad}
+        total={total}
+        average={average}
+        porcent={porcent} />
     </div>
   )
 }
@@ -63,7 +106,7 @@ const App = () => {
 export default App
 
 //const Display =({ counter }) => <div>{counter}</div>
-  
+
 /* const History = (props) => {
   if (props.allClicks.length === 0) {
     return(
