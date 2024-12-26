@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import personServices from './services/persons'
 
 
 const Filter = ({show, handleShowChange}) =>{
@@ -37,29 +38,38 @@ const PersonForm =({addPerson,newName,handleNameChange,newNumber,handleNumberCha
 )
 }
 
-const Persons =({filteredPersons}) => {
+const Persons =({filteredPersons, elimPersonOf}) => {
   return(
     <div>
     {filteredPersons.map((person) =>
-      <p key={person.id}>
+    <div key={person.id} style={{display: 'flex', alignItems: 'center'}}>
+      <p style={{marginRight: '8px'}}>
         {person.name}: {person.number}
       </p>
+      <button onClick={()=>elimPersonOf(person.id)}>Delet</button>
+    </div>
     )}
+     
     </div>
   )
   
 }
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-123456', id: 1 },
-    { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
-    { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
-    { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 }
-  ]) 
+  const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [show, setShow] = useState('')
+  
+  useEffect(() => {
+    personServices
+    .getAll()
+    .then(returnAll => {
+      setPersons(returnAll)
+    })
+  }, [])
+
+
   const filteredPersons = persons.filter((person) =>
     person.name.toLowerCase().includes(show.toLowerCase())
   )
@@ -83,21 +93,45 @@ const App = () => {
   const addPerson= (event) =>{
     event.preventDefault()
     
-    if (persons.find((element) => element.name === newName)) {
+    if (persons.find((element) => element.name === newName & element.number === newNumber)) {
       alert(`${newName} is already added to phonebook`)
       
-    }else{
+    }else if (persons.find((element) => element.name === newName & element.number !== newNumber)) {
+      if (window.confirm(`${newName} is already added to phonebook, replace the old number whit a new one? `)) {
+      const idPerson = persons.find(p => p.name === newName)  
+      const personChange = {...idPerson, number: newNumber}
+       personServices
+       .update(idPerson.id,personChange)
+       .then(returnedPerson =>{
+        setPersons(persons.map(person => person.id !== idPerson.id ? person : returnedPerson))
+      }) 
+      }
+    }
+    else{
       const personObjet = {
         name: newName,
         number: newNumber,
-        id: persons.length + 1,
       }
-      setPersons(persons.concat(personObjet))
+      personServices
+      .create(personObjet)
+      .then(returnedPerson => {
+        setPersons(persons.concat(returnedPerson))
+      }) 
       setNewName('')
       setNewNumber('')
       console.log('button clicked', event.target)
     }
     
+  }
+
+  const elimPersonOf = (id) =>{
+    console.log(id);
+    
+    if (window.confirm("Do you really want to this delete?")) {
+      personServices
+      .trash(id)
+      .then(setPersons(persons.filter(person => person.id !== id)))   
+    }
   }
   
   
@@ -114,13 +148,119 @@ const App = () => {
         handleNumberChange={handleNumberChange}/>
 
       <h2>Numbers</h2>
-      <Persons filteredPersons={filteredPersons}/>
+      <Persons filteredPersons={filteredPersons}
+      elimPersonOf = {elimPersonOf}/>
     </div>
   )
 }
 
-export default App
+/* import Note from './components/Note'
+import noteService from './services/notes'
 
+const App = () => {
+  const [notes, setNotes] = useState([])
+  const [newNote, setNewNote] = useState(
+    ''
+  ) 
+  const [showAll, setShowAll] = useState(true)
+
+  useEffect(() => {
+    noteService
+      .getAll()
+      .then(intialNotes => {
+        setNotes(intialNotes)
+      })
+  }, [])
+
+ 
+
+  const toggleImportanceOf = (id) => {
+    const note = notes.find(n => n.id === id)
+    const changeNote = {...note, important: !note.important}
+   
+    noteService.
+    update(id,changeNote).
+    then(returnedNote  => {
+      setNotes(notes.map(note => note.id !== id ? note : returnedNote ))
+    })
+    .catch(error => {
+      alert(
+        `the note '${note.content}' was already deleted from server`
+      )
+      setNotes(notes.filter(n => n.id !== id))
+    })
+  }
+
+  const addNote = (event) => {
+    event.preventDefault()
+    const noteObject = {
+      content: newNote,
+      important: Math.random() < 0.5,
+    }
+
+    noteService
+    .create(noteObject)
+    .then(returnedNote  => {
+      setNotes(notes.concat(returnedNote))
+      setNewNote('')
+    })
+  }
+
+  const handleNoteChange = (event) => {
+    console.log(event.target.value)
+    setNewNote(event.target.value)
+  }
+
+  const notesToShow = showAll
+    ? notes
+    : notes.filter(note => note.important === true)
+
+  return (
+    <div>
+      <h1>Notes</h1>
+      <div>
+        <button onClick={() => setShowAll(!showAll)}>
+          show {showAll ? 'important' : 'all' }
+        </button>
+      </div>
+      <ul>
+        {notesToShow.map(note =>
+          <Note 
+          key={note.id} 
+          note={note} 
+          toggleImportance={()=> toggleImportanceOf(note.id)}
+          />
+        )}
+      </ul>
+      <form onSubmit={addNote}>
+      <input 
+          value={newNote} 
+          onChange={handleNoteChange}
+      />
+        <button type="submit">save</button>
+      </form>
+
+    </div>
+  )
+} */
+
+/*  
+    (Consultas en el APP)
+    const hook = () => {
+    console.log('effect')
+    axios
+      .get('http://localhost:3001/notes')
+      .then(response => {
+        console.log('promise fulfilled')
+        setNotes(response.data)
+      })
+  }
+  
+  useEffect(hook, [])
+  console.log('render', notes.length, 'notes') */
+
+
+export default App
 
 
 /* 
