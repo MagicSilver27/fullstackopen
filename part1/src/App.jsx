@@ -55,11 +55,32 @@ const Persons =({filteredPersons, elimPersonOf}) => {
   
 }
 
+const Notification = ({ message, errorMessage }) => {
+  if (message === null && errorMessage === null) {
+    return null
+  }else if (message === null) {
+    return(
+    <div className="error">
+        {errorMessage}
+      </div>
+      )
+  }else{
+    return (
+      <div className="good">
+        {message}
+      </div>
+    )
+  }
+
+}
+
 const App = () => {
   const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [show, setShow] = useState('')
+  const [message, setMessage] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null)
   
   useEffect(() => {
     personServices
@@ -68,7 +89,6 @@ const App = () => {
       setPersons(returnAll)
     })
   }, [])
-
 
   const filteredPersons = persons.filter((person) =>
     person.name.toLowerCase().includes(show.toLowerCase())
@@ -104,7 +124,22 @@ const App = () => {
        .update(idPerson.id,personChange)
        .then(returnedPerson =>{
         setPersons(persons.map(person => person.id !== idPerson.id ? person : returnedPerson))
-      }) 
+        setMessage(
+          `${idPerson.name} was edited successful`
+        )
+        setTimeout(() => {
+          setMessage(null)
+        }, 5000)
+
+      }).catch(error => {
+        setErrorMessage(
+          `${idPerson.name} was already removed from server`
+        )
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 5000)
+        setPersons(persons.filter(p => p.id !== idPerson.id))
+      })
       }
     }
     else{
@@ -116,14 +151,29 @@ const App = () => {
       .create(personObjet)
       .then(returnedPerson => {
         setPersons(persons.concat(returnedPerson))
-      }) 
-      setNewName('')
-      setNewNumber('')
-      console.log('button clicked', event.target)
+        setNewName('')
+        setNewNumber('')
+        setMessage(
+          `Added ${personObjet.name}`
+        )
+        setTimeout(() => {
+          setMessage(null)
+        }, 5000)
+      }).catch(error => {
+        // está es la forma de acceder al mensaje de error
+        console.log(error.response.data.error)
+        setErrorMessage(
+          `Added ${error.response.data.error}`
+        )
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 5000)
+      })
+      
     }
     
   }
-
+  
   const elimPersonOf = (id) =>{
     console.log(id);
     
@@ -138,8 +188,10 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+        <Notification message={message} errorMessage={errorMessage}/>
+
         <Filter show={show} handleShowChange={handleShowChange}/>
-        
+
       <h3>Add a new</h3>
         <PersonForm addPerson={addPerson} 
         newName={newName} 
@@ -157,12 +209,25 @@ const App = () => {
 /* import Note from './components/Note'
 import noteService from './services/notes'
 
+const Footer = () => {
+  const footerStyle = {
+    color: 'green',
+    fontStyle: 'italic',
+    fontSize: 16
+  }
+  return (
+    <div style={footerStyle}>
+      <br />
+      <em>Note app, Department of Computer Science, University of Helsinki 2024</em>
+    </div>
+  )
+}
+
 const App = () => {
   const [notes, setNotes] = useState([])
-  const [newNote, setNewNote] = useState(
-    ''
-  ) 
+  const [newNote, setNewNote] = useState('') 
   const [showAll, setShowAll] = useState(true)
+  const [errorMessage, setErrorMessage] = useState('some error happened...')
 
   useEffect(() => {
     noteService
@@ -172,7 +237,17 @@ const App = () => {
       })
   }, [])
 
- 
+  const Notification = ({ message }) => {
+    if (message === null) {
+      return null
+    }
+  
+    return (
+      <div className="error">
+        {message}
+      </div>
+    )
+  }
 
   const toggleImportanceOf = (id) => {
     const note = notes.find(n => n.id === id)
@@ -184,9 +259,12 @@ const App = () => {
       setNotes(notes.map(note => note.id !== id ? note : returnedNote ))
     })
     .catch(error => {
-      alert(
-        `the note '${note.content}' was already deleted from server`
+      setErrorMessage(
+        `Note '${note.content}' was already removed from server`
       )
+      setTimeout(() => {
+        setErrorMessage(null)
+      }, 5000)
       setNotes(notes.filter(n => n.id !== id))
     })
   }
@@ -240,6 +318,8 @@ const App = () => {
         <button type="submit">save</button>
       </form>
 
+
+      <Footer />
     </div>
   )
 } */
